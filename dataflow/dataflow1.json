@@ -12,7 +12,11 @@
 					"name": "MoviesSource"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "RenameSelect"
@@ -24,7 +28,7 @@
 					"name": "Window1"
 				}
 			],
-			"script": "source(output(\n\t\tmovieId as string,\n\t\ttitle as string,\n\t\tgenres as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> MoviesSource\nMoviesSource select(mapColumn(\n\t\tmovieId,\n\t\ttitle,\n\t\tgenresAll = genres\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RenameSelect\nRenameSelect derive(ComedyFlag = iif(like(genresAll , '%Comedy%'), 1, 0)) ~> GeneroComedia\nGeneroComedia window(over(ComedyFlag),\n\tasc(title, true),\n\tMaxMovieId = max(movieId)) ~> Window1"
+			"script": "source(output(\n\t\tmovieId as string,\n\t\ttitle as string,\n\t\tgenres as string\n\t),\n\tallowSchemaDrift: true,\n\tvalidateSchema: false,\n\tignoreNoFilesFound: false) ~> MoviesSource\nMoviesSource select(mapColumn(\n\t\tmovieId,\n\t\ttitle,\n\t\tgenresAll = genres\n\t),\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true) ~> RenameSelect\nRenameSelect derive(ComedyFlag = iif(like(genresAll , '%Comedy%'), 1, 0)) ~> GeneroComedia\nGeneroComedia window(over(ComedyFlag),\n\tasc(title, true),\n\tMaxMovieId = max(movieId)) ~> Window1\nWindow1 sink(allowSchemaDrift: true,\n\tvalidateSchema: false,\n\tskipDuplicateMapInputs: true,\n\tskipDuplicateMapOutputs: true,\n\tstore: 'cache',\n\tformat: 'inline',\n\toutput: false,\n\tsaveOrder: 1) ~> sink1"
 		}
 	}
 }
